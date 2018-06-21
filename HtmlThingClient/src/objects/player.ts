@@ -1,29 +1,38 @@
 import {NetworkScene} from "../lib/networkscene";
+import {TestScene} from "../scenes/testScene";
 
-export class Player extends Phaser.GameObjects.Sprite {
+export class Player extends Phaser.Physics.Arcade.Sprite {
 	public scene: NetworkScene;
 	private readonly speed = 200;
+	private readonly sendRate = 200;
 	private upKey: Phaser.Input.Keyboard.Key;
 	private downKey: Phaser.Input.Keyboard.Key;
 	private leftKey: Phaser.Input.Keyboard.Key;
 	private rightKey: Phaser.Input.Keyboard.Key;
 	private networkmanager: SocketIOClient.Socket;
 
-	constructor(scene: NetworkScene, x: number, y: number) {
+	constructor(scene: TestScene, x: number, y: number) {
 		super(scene, x, y, "player");
+		scene.add.existing(this);
+		scene.physics.add.existing(this);
 
 		this.upKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
 		this.downKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
 		this.rightKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 		this.leftKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
 		this.networkmanager = this.scene.networkmanager;
-		scene.add.existing(this);
+		this.body.setAllowGravity(false);
+		this.body.setCollideWorldBounds(true);
+		this.scene.physics.add.collider(this, scene.obstacles);
+
+		setInterval(this.networkSync.bind(this), this.sendRate);
 	}
 
-	public preUpdate(time: number, delta: number) {
-		this.handleInput(delta / 1000);
+	public preUpdate() {
+		// console.log(this.x)
+		this.handleInput();
 		this.faceMouse();
-		this.networkSync();
+		// this.networkSync();
 	}
 
 	private networkSync() {
@@ -41,9 +50,10 @@ export class Player extends Phaser.GameObjects.Sprite {
 		const targetAngle = Phaser.Math.Angle.Between(this.x, this.y, this.scene.input.activePointer.x, this.scene.input.activePointer.y);
 
 		this.rotation = targetAngle;
+		this.body.rotation = targetAngle;
 	}
 
-	private handleInput(delta: number) {
+	private handleInput() {
 		let vx = 0;
 		let vy = 0;
 
@@ -68,7 +78,21 @@ export class Player extends Phaser.GameObjects.Sprite {
 			vx = 0;
 		}
 
-		this.x += vx * delta;
-		this.y += vy * delta;
+		this.setVelocity(vx, vy);
+		// if (this.x + vx <= 0) {
+		// 	this.x = 0;
+		// } else if (this.x + vx >= this.scene.width) {
+		// 	this.x = this.scene.width;
+		// } else {
+		// 	this.x += vx;
+		// }
+		//
+		// if (this.y + vy <= 0) {
+		// 	this.y = 0;
+		// } else if (this.y + vy >= this.scene.height) {
+		// 	this.y = this.scene.height;
+		// } else {
+		// 	this.y += vy;
+		// }
 	}
 }

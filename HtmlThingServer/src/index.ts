@@ -17,6 +17,8 @@ ioServer.on("connection", (con) => {
 		con.broadcast.emit("Player.New", data);
 	});
 	con.on("Player.Movement", (data: NetworkMessages.Player.Movement) => {
+		// players[con.id].x = data.x;
+		// players[con.id].y = data.y;
 		con.broadcast.volatile.emit("Player.Movement", data);
 	});
 	con.on("disconnect", () => {

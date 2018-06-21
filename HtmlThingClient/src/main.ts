@@ -1,13 +1,20 @@
 import {TestScene} from "./scenes/testScene";
 
 const config: GameConfig = {
-	type: Phaser.AUTO,
+	type: Phaser.WEBGL,
 	width: 1280,
 	height: 720,
 	backgroundColor: 0x33ccff,
 	scene: TestScene,
 	input: {
 		keyboard: true,
+	},
+	physics: {
+		default: "arcade",
+		arcade: {
+			gravity: { y: 0 },
+			debug: false,
+		},
 	},
 };
 
